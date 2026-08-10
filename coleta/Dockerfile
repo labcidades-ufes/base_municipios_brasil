@@ -1,9 +1,13 @@
 # 1. Usa a base que você acabou de buildar com sucesso
-FROM utils-r_duckdb:latest
+# Base do R (dags/utils/r_duckdb). O Makefile sobrescreve via --build-arg.
+ARG BASE_IMAGE=utils-r_duckdb:4.6.1-1
+FROM ${BASE_IMAGE}
 
 # 2. Instala os pacotes R necessários para a coleta
 # O httr2 detecta o DTB mais recente no FTP do IBGE; readxl lê o arquivo de municípios
-RUN R -e "install.packages(c('httr2','readxl','dplyr','readr','glue'), repos='https://cloud.r-project.org/')"
+RUN R -q -e "pkgs <- c('httr2','readxl','dplyr','readr','glue'); \
+             install.packages(pkgs); \
+             stopifnot(all(pkgs %in% rownames(installed.packages())))"
 
 # 3. Define onde o trabalho acontece
 WORKDIR /app
